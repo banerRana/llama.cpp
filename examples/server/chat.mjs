@@ -1,7 +1,7 @@
 import * as readline from 'node:readline'
 import { stdin, stdout } from 'node:process'
 import { readFileSync } from 'node:fs'
-import { SchemaConverter }  from './public/json-schema-to-grammar.mjs'
+import { SchemaConverter }  from './public_legacy/json-schema-to-grammar.mjs'
 
 const args = process.argv.slice(2);
 const grammarJsonSchemaFile = args.find(
@@ -26,8 +26,9 @@ const propOrder = grammarJsonSchemaPropOrder
 
 let grammar = null
 if (grammarJsonSchemaFile) {
-    const schema = JSON.parse(readFileSync(grammarJsonSchemaFile, 'utf-8'))
-    const converter = new SchemaConverter(propOrder)
+    let schema = JSON.parse(readFileSync(grammarJsonSchemaFile, 'utf-8'))
+    const converter = new SchemaConverter({prop_order: propOrder, allow_fetch: true})
+    schema = await converter.resolveRefs(schema, grammarJsonSchemaFile)
     converter.visit(schema, '')
     grammar = converter.formatGrammar()
 }
